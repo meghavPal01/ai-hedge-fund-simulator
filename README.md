@@ -133,15 +133,3 @@ errors.
   what's in this repo.
 ---
  
-## Troubleshooting
- 
-| Symptom | Likely cause |
-|---|---|
-| Every card shows the amber "SAMPLE DATA" badge | Backend isn't running, or isn't on port 8000 — check terminal 1 |
-| Backend terminal shows CORS errors in the browser console | `allow_origins` in `backend/main.py` doesn't include your frontend's origin |
-| `/api/stocks/{symbol}` returns 404 | Ticker isn't on Yahoo Finance, or yfinance couldn't find it — try a well-known ticker like `AAPL` first |
-| `/api/stocks/{symbol}` returns 502, backend logs show `429 Client Error: Too Many Requests` from `query2.finance.yahoo.com` | **Yahoo Finance is rate-limiting yfinance**, usually from too many near-simultaneous requests (e.g. 5+ watchlist cards loading at once, each fetching independently). The backend now caches Yahoo responses (45s for price/history, 1hr for company metadata) to cut down repeat calls, and degrades gracefully — a rate-limited metadata call no longer fails the whole quote, since price data is fetched separately. If you still hit this: wait 30–60 seconds before retrying (Yahoo's limit resets), and make sure `<React.StrictMode>` isn't wrapping the app in `main.jsx` — StrictMode double-fires every fetch in dev, doubling your request volume. If it persists, reduce `DEFAULT_WATCHLIST` in `App.jsx` to fewer tickers, or move to a paid data provider (Polygon.io, Finnhub) that doesn't rate-limit this aggressively. |
-| Search returns nothing | You're using the static universe in `services/universe.py` — it only knows ~15 tickers by design |
- 
----
- 
